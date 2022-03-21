@@ -1,0 +1,41 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: {{ include "app.name" . }}
+  namespace: {{ .Values.app.namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app: {{ include "app.name" . }}
+spec:
+  replicas: 1
+  serviceName: {{ include "app.name" . }}
+  selector:
+    matchLabels:
+      app: {{ include "app.name" . }}
+  template:
+    metadata:
+      name: {{ include "app.name" . }}
+      labels:
+        app: {{ include "app.name" . }}
+      annotations:
+        sidecar.istio.io/inject: {{ .Values.istio.enabled | quote }}
+    spec:
+      containers:
+      - name: {{ include "app.name" . }}
+        image: "selenium/hub:3.11.0-californium"
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: {{ .Values.app.port }}
+          protocol: TCP
+        resources:
+          limits:
+            memory: {{ .Values.app.resources.memory.limit }}
+          requests:
+            memory: {{ .Values.app.resources.memory.request }}
+        securityContext:
+          capabilities: {}
+          privileged: false
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always

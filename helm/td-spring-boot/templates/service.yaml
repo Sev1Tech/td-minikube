@@ -1,0 +1,28 @@
+{{- if .Values.minikube.ingress.enabled }}
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "app.name" . }}-service
+  namespace: kube-system
+spec:
+  type: ExternalName
+  externalName: {{ include "app.name" . }}-service.{{ .Values.app.namespace }}.svc.cluster.local
+---
+{{- end }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "app.name" . }}-service
+  namespace: {{ .Values.app.namespace }}
+spec:
+  ports:
+    - name: http
+      port: 80
+      targetPort: {{ .Values.app.port }}
+      protocol: TCP
+  selector:
+    app: {{ include "app.name" . }}
+{{- if .Values.minikube.ingress.enabled }}
+  type: NodePort
+{{- end }}

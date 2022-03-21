@@ -1,0 +1,53 @@
+{{- if .Values.database.enabled }}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app.name" . }}-db
+  namespace: {{ .Values.app.namespace }}
+  labels:
+    {{- include "common.labels" . | nindent 4 }}
+    app: {{ include "app.name" . }}-db
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "app.name" . }}-db
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      name: {{ include "app.name" . }}-db
+      labels:
+        app: {{ include "app.name" . }}-db
+      annotations:
+        sidecar.istio.io/inject: {{ .Values.istio.enabled | quote }}
+    spec:
+      containers:
+      - name: {{ .Values.database.type }}
+        image: "td-{{ .Values.database.type }}:latest"
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: POSTGRES_USER
+          value: postgres
+        - name: POSTGRES_PASSWORD
+          value: postgres
+{{- if (eq .Values.database.type "mongo") }}
+        - name: MONGO_INITDB_DATABASE
+          value: {{ .Values.database.mongo.name }}
+{{- end }}
+        ports:
+        - containerPort: {{ include "database.port" . }}
+          protocol: TCP
+        resources:
+          limits:
+            memory: {{ .Values.database.resources.memory.limit }}
+          requests:
+            memory: {{ .Values.database.resources.memory.request }}
+        securityContext:
+          capabilities: {}
+          privileged: false
+        terminationMessagePath: /dev/termination-log
+        terminationMessagePolicy: File
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+{{- end }}

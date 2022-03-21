@@ -1,0 +1,38 @@
+app:
+  name: ""
+  imageTag: latest
+  namespace: ""
+  extraEnv:
+  env: local
+  port: 8080
+  readinessProbe:
+    path: /actuator/health
+  livenessProbe:
+    path: /actuator/health
+  resources:
+    memory:
+      request: 256Mi
+      limit: 512Mi
+    cpu:
+      request: 50m
+      limit: 300m
+cluster:
+  type: ""
+  baseDomain: ""
+  openshift:
+    route:
+      enabled: false
+      to: istio-ingressgateway
+      port: http2
+docker:
+  registryHost:
+istio:
+  enabled: false
+minikube:
+  ingress:
+    enabled: false
+    path: /
+prometheus:
+  enabled: false
+spring:
+  profile: ""

@@ -1,0 +1,16 @@
+app:
+  name: td-grid-chrome
+  namespace: local
+  port: 4444
+  env:
+  resources:
+    memory:
+      request: 256Mi
+      limit: 512Mi
+  extraEnv:
+  - name: HUB_HOST
+    value: td-grid-hub.local.svc
+docker:
+  registryHost:
+istio:
+  enabled: false

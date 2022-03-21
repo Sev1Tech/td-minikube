@@ -1,0 +1,52 @@
+app:
+  name: ""
+  imageTag: latest
+  namespace: ""
+  env:
+  port: 8080
+  readinessProbe:
+    path: /actuator/health
+  livenessProbe:
+    path: /actuator/health
+  resources:
+    memory:
+      request: 256Mi
+      limit: 512Mi
+cluster:
+  type: ""
+  baseDomain: ""
+  openshift:
+    route:
+      enabled: false
+      to: istio-ingressgateway
+      port: http2
+database:
+  enabled: false
+  type: ""
+  mongo:
+    env:
+      username: MONGO_INITDB_ROOT_USERNAME
+      password: MONGO_INITDB_ROOT_PASSWORD
+    name: document
+    port: 27017
+    secret: document-svc-mongo
+  postgres:
+    env:
+      username: POSTGRES_USER
+      password: POSTGRES_PASSWORD
+    name: postgres
+    port: 5432
+    secret: ""
+  resources:
+    memory:
+      request: 256Mi
+      limit: 512Mi
+  volume:
+    capacity: 20Gi
+docker:
+  registryHost:
+istio:
+  enabled: false
+spring:
+  enabled: false
+  profile: ""

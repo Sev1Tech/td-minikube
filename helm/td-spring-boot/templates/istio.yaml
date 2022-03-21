@@ -1,0 +1,37 @@
+{{- if .Values.istio.enabled }}
+apiVersion: networking.istio.io/v1beta1
+kind: Gateway
+metadata:
+  name: {{ include "app.name" . }}-gw
+  namespace: {{ .Values.app.namespace }}
+spec:
+  selector:
+    istio: ingressgateway
+  servers:
+  - hosts:
+    - {{ include "istio.server.host" . }}
+    port:
+      name: http2
+      number: 80
+      protocol: HTTP2
+
+---
+apiVersion: networking.istio.io/v1beta1
+kind: VirtualService
+metadata:
+  name: {{ include "app.name" . }}-vs
+  namespace: {{ .Values.app.namespace }}
+spec:
+  gateways:
+  - {{ include "app.name" . }}-gw
+  hosts:
+  - {{ include "istio.server.host" . }}
+  http:
+  - match:
+    - port: 80
+    route:
+    - destination:
+        host: {{ .Values.app.name }}.{{ .Values.app.namespace }}.svc.cluster.local
+        port:
+          number: 80
+{{- end }}

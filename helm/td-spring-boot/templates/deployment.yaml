@@ -1,0 +1,60 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ include "app.name" . }}
+  namespace: {{ .Values.app.namespace }}
+  labels:
+    app: {{ include "app.name" . }}
+    {{- include "common.labels" . | nindent 4 }}
+spec:
+  replicas: 1
+  selector:
+    matchLabels:
+      app: {{ include "app.name" .  }}
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      name: {{ include "app.name" . }}
+      labels:
+        app: {{ include "app.name" . }}
+      annotations:
+        sidecar.istio.io/inject: {{ .Values.istio.enabled | quote }}
+        prometheus.io/scrape: {{ .Values.prometheus.enabled | quote }}
+        prometheus.io/port: "{{ .Values.app.port }}"
+        prometheus.io/path: "/actuator/prometheus"
+    spec:
+      containers:
+      - name: app
+        image: {{ .Values.docker.registryHost }}{{ .Values.app.name }}:{{ .Values.app.imageTag }}
+        imagePullPolicy: IfNotPresent
+        env:
+        - name: SPRING_PROFILES_ACTIVE
+          value: {{ .Values.spring.profile }}
+{{- if .Values.app.extraEnv }}
+{{ toYaml .Values.app.extraEnv | indent 8 }}
+{{- end }}
+        ports:
+        - containerPort: {{ .Values.app.port }}
+        readinessProbe:
+          timeoutSeconds: 3
+          initialDelaySeconds: 120
+          httpGet:
+            path: {{ .Values.app.readinessProbe.path }}
+            port: {{ .Values.app.port }}
+        livenessProbe:
+          timeoutSeconds: 3
+          initialDelaySeconds: 120
+          httpGet:
+            path: {{ .Values.app.livenessProbe.path }}
+            port: {{ .Values.app.port }}
+        resources:
+          limits:
+            cpu: {{ .Values.app.resources.cpu.limit }}
+            memory: {{ .Values.app.resources.memory.limit }}
+          requests:
+            cpu: {{ .Values.app.resources.cpu.request }}
+            memory: {{ .Values.app.resources.memory.request }}
+      imagePullSecrets:
+      - name: nexus
+      - name: docker.io

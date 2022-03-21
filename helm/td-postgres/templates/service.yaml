@@ -1,0 +1,17 @@
+{{- if .Values.database.enabled }}
+apiVersion: v1
+kind: Service
+metadata:
+  name: {{ include "app.name" . }}-db
+  namespace: {{ .Values.app.namespace }}
+spec:
+  ports:
+  - name: client
+    port: {{ include "database.port" . }}
+    protocol: TCP
+    targetPort: {{ include "database.port" . }}
+  selector:
+    app: {{ include "app.name" . }}-db
+  sessionAffinity: None
+  type: ClusterIP
+{{- end }}

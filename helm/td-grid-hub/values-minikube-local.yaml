@@ -1,0 +1,13 @@
+app:
+  name: td-grid-hub
+  namespace: local
+  port: 4444
+  env:
+  resources:
+    memory:
+      request: 256Mi
+      limit: 512Mi
+docker:
+  registryHost:
+istio:
+  enabled: false
